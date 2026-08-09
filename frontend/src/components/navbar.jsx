@@ -1,16 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { getWatchlist } from "../services/watchlistService";
+import { getCurrentProfile } from "../services/userService";
 
 const NavBar = ({ user }) => {
   const [watchlistCount, setWatchlistCount] = useState(
     getWatchlist().length
   );
+  const [isGold, setIsGold] = useState(false);
 
   useEffect(() => {
     const updateCount = () => {
       setWatchlistCount(getWatchlist().length);
     };
+
+    const fetchProfile = async () => {
+      if (user) {
+        try {
+          const { data } = await getCurrentProfile();
+          setIsGold(data.isGold);
+        } catch (ex) {}
+      }
+    };
+
+    fetchProfile();
 
     window.addEventListener("storage", updateCount);
     window.addEventListener("watchlistUpdated", updateCount);
@@ -19,7 +32,7 @@ const NavBar = ({ user }) => {
       window.removeEventListener("storage", updateCount);
       window.removeEventListener("watchlistUpdated", updateCount);
     };
-  }, []);
+  }, [user]);
 
   return (
     <nav className="w-full border-b border-gray-800 bg-gray-900">
@@ -77,8 +90,9 @@ const NavBar = ({ user }) => {
             {user ? (
               <>
                 <li>
-                  <NavLink className="text-sm font-medium text-gray-300 no-underline hover:text-white" to="/profile">
+                  <NavLink className="text-sm font-medium text-gray-300 no-underline hover:text-white flex items-center gap-1" to="/profile">
                     {user.name}
+                    {isGold && <span title="Gold Member">⭐</span>}
                   </NavLink>
                 </li>
 

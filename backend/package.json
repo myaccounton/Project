@@ -27,6 +27,7 @@
     "mongoose": "^8.18.0",
     "multer": "^2.0.2",
     "multer-storage-cloudinary": "^4.0.0",
+    "razorpay": "^2.9.8",
     "underscore": "^1.13.7",
     "winston": "^3.17.0",
     "winston-mongodb": "^7.0.1"

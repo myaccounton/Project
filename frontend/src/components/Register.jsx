@@ -3,11 +3,12 @@ import Joi from "joi";
 import auth from "../services/authService";
 
 const Register = ({ history }) => {
-  const [data, setData] = useState({ email: "", password: "" });
+  const [data, setData] = useState({ name: "", email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
   const rules = {
+    name: Joi.string().required().label("Full Name"),
     email: Joi.string().email({ tlds: { allow: false } }).required().label("Email"),
     password: Joi.string().min(5).required().label("Password")
   };
@@ -51,7 +52,7 @@ const Register = ({ history }) => {
       const payload = {
         email: data.email,
         password: data.password,
-        name: data.email.split("@")[0] || "User"
+        name: data.name
       };
 
       const response = await auth.register(payload);
@@ -73,6 +74,22 @@ const Register = ({ history }) => {
         <p className="mb-6 text-sm text-gray-400">Register to start renting movies.</p>
 
         <form onSubmit={handleSubmit} noValidate>
+          <div className="mb-4">
+            <label htmlFor="name" className="mb-2 block text-sm font-medium text-gray-200">
+              Full Name
+            </label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              value={data.name}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2.5 text-sm text-white outline-none transition focus:ring-2 focus:ring-blue-500"
+              placeholder="John Doe"
+            />
+            {errors.name && <div className="mt-1 text-xs text-red-400">{errors.name}</div>}
+          </div>
+
           <div className="mb-4">
             <label htmlFor="email" className="mb-2 block text-sm font-medium text-gray-200">
               Email

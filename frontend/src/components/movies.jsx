@@ -3,15 +3,54 @@ import MovieCardsGrid from "./movieCardsGrid";
 import ListGroup from "./common/listGroup";
 import Pagination from "./common/pagination";
 import MoviesSkeleton from "./common/moviesSkeleton";
+import PaymentModal from "./paymentModal";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 import { PAGE_SIZE } from "../utils/constants";
 import useMovies from "../hooks/useMovies";
 import usePagination from "../hooks/usePagination";
 import useSort from "../hooks/useSort";
+import { getCurrentProfile, upgradeToGold } from "../services/userService";
 
 const Movies = ({ user }) => {
   const { movies, genres, loading, handleDelete, handleLike } = useMovies();
   const safeMovies = Array.isArray(movies) ? movies : [];
+  
+  const [isGold, setIsGold] = useState(false);
+  const [upgrading, setUpgrading] = useState(false);
+  const [showGoldPayment, setShowGoldPayment] = useState(false);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (user && !user.isAdmin) {
+        try {
+          const { data } = await getCurrentProfile();
+          setIsGold(data.isGold);
+        } catch (ex) {}
+      }
+    };
+    fetchProfile();
+  }, [user]);
+
+  const initiateUpgrade = () => {
+    setShowGoldPayment(true);
+  };
+
+  const handleUpgradePayment = async (paymentMethod) => {
+    setUpgrading(true);
+    try {
+      // Simulate payment processing delay
+      await new Promise(r => setTimeout(r, 1000));
+      await upgradeToGold();
+      setIsGold(true);
+      toast.success("Payment successful! Welcome to Gold Membership 🌟");
+      window.location.reload();
+    } catch (ex) {
+      toast.error("Failed to process payment.");
+      setUpgrading(false);
+      setShowGoldPayment(false);
+    }
+  };
 
   const [selectedGenre, setSelectedGenre] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -127,11 +166,23 @@ const Movies = ({ user }) => {
           </p>
 
           {user && !user.isAdmin && (
-            <small className="mt-2 block text-gray-400">
-              {user.isGold
-                ? "🌟 Gold Member · Rent up to 5 movies"
-                : "Regular Member · Rent up to 2 movies"}
-            </small>
+            <div className="mt-3 flex items-center gap-4">
+              <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${isGold ? 'bg-yellow-500/20 text-yellow-400' : 'bg-gray-800 text-gray-300'}`}>
+                {isGold
+                  ? "🌟 Gold Member (Rent up to 5 movies)"
+                  : "Regular Member (Rent up to 2 movies)"}
+              </span>
+              
+              {!isGold && (
+                <button
+                  onClick={initiateUpgrade}
+                  disabled={upgrading}
+                  className="rounded-lg bg-gradient-to-r from-yellow-500 to-amber-500 px-4 py-1.5 text-sm font-bold text-white shadow-lg transition hover:from-yellow-400 hover:to-amber-400 disabled:opacity-50"
+                >
+                  Upgrade to Gold ⭐
+                </button>
+              )}
+            </div>
           )}
 
           {user?.isAdmin && (
@@ -279,6 +330,17 @@ const Movies = ({ user }) => {
           </div>
         </section>
       </div>
+
+      {showGoldPayment && (
+        <PaymentModal
+          title="Gold Membership Upgrade"
+          amount={499}
+          subtitle="Unlock the ability to rent up to 5 movies simultaneously with a lifetime Gold Membership!"
+          onPay={handleUpgradePayment}
+          onClose={() => !upgrading && setShowGoldPayment(false)}
+          disabled={upgrading}
+        />
+      )}
     </div>
   );
 

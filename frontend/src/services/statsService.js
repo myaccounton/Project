@@ -11,3 +11,8 @@ export async function getStatsRentalCount() {
   const n = Number(data?.totalRentals);
   return { totalRentals: Number.isFinite(n) ? n : 0 };
 }
+
+export async function getDashboardStats() {
+  const { data } = await http.get("/stats/dashboard");
+  return data;
+}

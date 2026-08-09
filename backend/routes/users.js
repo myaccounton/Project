@@ -8,9 +8,37 @@ const asyncHandler = require('../middleware/async');
 const constants = require('../utils/constants');
 const router = express.Router();
 
+const { Customer } = require('../models/customer');
+
 router.get('/me', auth, asyncHandler(async (req, res) => {
     const user = await User.findById(req.user._id).select('-password');
-    res.send(user);
+    if (!user) return res.status(404).send('User not found.');
+
+    const customer = await Customer.findOne({ userId: req.user._id });
+    
+    res.send({
+      ...user.toObject(),
+      isGold: customer ? customer.isGold : false
+    });
+}));
+
+router.post('/me/upgrade', auth, asyncHandler(async (req, res) => {
+    let customer = await Customer.findOne({ userId: req.user._id });
+    
+    if (!customer) {
+        const user = await User.findById(req.user._id);
+        customer = new Customer({
+            name: user.name,
+            phone: '0000000000',
+            userId: user._id,
+            isGold: true
+        });
+    } else {
+        customer.isGold = true;
+    }
+    
+    await customer.save();
+    res.send(customer);
 }));
 
 router.post('/', asyncHandler(async (req, res) => {

@@ -17,6 +17,7 @@ import ErrorBoundary from "./components/common/errorBoundary";
 import Logout from "./components/logout";
 import Profile from "./components/profile";
 import Dashboard from "./components/dashboard";
+import Cart from "./components/cart";
 import useAuth from "./hooks/useAuth";
 import "react-toastify/dist/ReactToastify.css";
 import "./App.css";
@@ -53,6 +54,7 @@ function App() {
             render={props => user ? <Watchlist {...props} /> : <Redirect to="/login" />}
           />
           <Route path="/profile" component={Profile} />
+          <Route path="/cart" component={Cart} />
           <Route path="/customers" component={NotFound} />
           <Redirect from="/" exact to="/movies" />
           <Redirect to="/not-found" />
